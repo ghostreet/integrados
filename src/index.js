@@ -1,13 +1,13 @@
 import express from "express";
-import ProdRouter from "./router/product.routes.js";
-import CartRouter from "./router/cart.routes.js";
-import CartManager from "./managers/CartManager.js";
-import ProductsManager from "./managers/ProductManager.js";
+import ProdRouter from "./routes/product.routes.js";
+import CartRouter from "./routes/cart.routes.js";
+import CartManager from "./dao/classes/CartManager.js";
+import ProductsManager from "./dao/classes/ProductManager.js";
 import mongoose from "mongoose";
 import { engine } from "express-handlebars";
 import * as path from "path";
 import __dirname from "./utils.js";
-import userRouter from "./router/user.routes.js";
+import userRouter from "./routes/user.routes.js";
 import MongoStore from "connect-mongo";
 import session from "express-session";
 import sessionFileStore from "session-file-store";
@@ -32,7 +32,7 @@ app.listen(PORT, () =>{
 
 
 app.use("/api/products", ProdRouter)
-
+app.use('/user', userRouter);
 
 
 
