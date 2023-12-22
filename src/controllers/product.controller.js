@@ -18,10 +18,11 @@ const productController ={
         }
       },
       
-      getProductById: async (req, res) => {
-        try {
-          const pid = req.params.id;
-          const productDetail = await productManager.getProdId(pid);
+      getProductById: async (req, res) => { 
+        try 
+        {
+          const id = req.params.id;
+          const productDetail = await productManager.getProductById(id);
       
           if (productDetail) {
            res.render("detail",{
@@ -29,13 +30,13 @@ const productController ={
             product: productDetail,
            })
           } else {
-            res.status(404).json({ error: 'Producto no encontrado' });
+            res.status(404).json({ error: 'Usuario no encontrado' });
           }
         } catch (error) {
-          console.error('Error al obtener el producto:', error);
+          console.error('Error al obtener el usuario:', error);
           res.status(500).json({ error: 'Error interno del servidor' });
         }
-      },
+     },
       
       getProductsLimit: async (req, res) => {
         try {
