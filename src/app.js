@@ -12,6 +12,8 @@ import ticketRouter from './routes/ticket.routes.js'
 import UserMongo from "./dao/mongo/user.mongo.js"
 import ProdMongo from "./dao/mongo/products.mongo.js"
 
+import productManager from "./dao/servicios/ProductManager.js"
+
 import { Strategy as JwtStrategy } from 'passport-jwt';
 import { ExtractJwt as ExtractJwt } from 'passport-jwt';
 
@@ -32,6 +34,7 @@ import loggerMiddleware from "./loggerMiddleware.js";
 import MongoStore from "connect-mongo";
 import session from "express-session";
 import sessionFileStore from "session-file-store";
+import { Products } from './dao/factory.js'
 
 
 const FileStore = sessionFileStore(session);
@@ -112,14 +115,12 @@ app.get("/products", async(req, res)=>{
   if(!req.session.emailUser){
     return res.redirect("/login")
   }
-  let allProds = await product.getProducts();
-  const products = allProds.map(product => product.toJSON());
-  res.render("product", {
+  const products = await productManager.getProducts(); // Obtén los productos de tu base de datos
+  res.render('product', {
     title: "vista de Productos",
     products: products,
     email: req.session.emailUser,
-    rol: req.session.rolUser
-  });
+    rol: req.session.rolUser }); // Renderiza la vista 'product' y pasa los productos como un objeto llamado 'products'
 });
 
 //render index

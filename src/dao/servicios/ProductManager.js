@@ -1,12 +1,8 @@
-/*import { promises as fs } from "fs";
+import { promises as fs } from "fs";
 import { nanoid } from "nanoid";
 import productsModel from '../mongo/models/product.model.js'
 
-
 class ProductsManager extends productsModel {
-    constructor() {
-        super();
-    }
 
 
 async addProducts(product) {
@@ -49,10 +45,11 @@ async exist(productId) {
     }
 }
 
+
 async getProdLimit(limit)
 {
     try{
-        const products = await productsManager.find().limit(limit);
+        const products = await productsModel.find().limit(limit);
         if (products.length < limit ){
             limit = products.length;
         }
@@ -69,7 +66,7 @@ async getProdPage(page, productPage)
     }
 
     try {
-        const products = await productsManager.find()
+        const products = await productsModel.find()
         .skip((page - 1) * productPage)
         .limit(productPage)
         return products;
@@ -123,7 +120,7 @@ async getProdGeneral (page = 1, limit = 10, category, availability, sortOrder){
             filter.availability = availability;
         }
 
-        const query = ProductsManager.find(filter)
+        const query = productsModel.find(filter)
         .skip(startIn)
         .limit(limit)
 
@@ -133,7 +130,7 @@ async getProdGeneral (page = 1, limit = 10, category, availability, sortOrder){
 
         const products = await query.exec();
         
-        const totalProds = await ProductsManager.countDocuments(filter);
+        const totalProds = await productsModel.countDocuments(filter);
         const totalPag = Math.ceil(totalProds / limit);
         const pagPrev = startIn > 0;
         const pagNext = endIn < totalProds;
@@ -171,4 +168,4 @@ async getProdId(id) {
 
 }
 
-export default ProductsManager*/
+export default ProductsManager

@@ -1,5 +1,5 @@
 
-import Products from '../dao/mongo/products.mongo.js';
+import Products from '../dao/servicios/ProductManager.js';
 
 
 const productManager = new Products();
@@ -19,10 +19,9 @@ const productController ={
       },
       
       getProductById: async (req, res) => { 
-        try 
-        {
+        try {
           const id = req.params.id;
-          const productDetail = await productManager.getProductById(id);
+          const productDetail = await productManager.getProducts(id).lean();
       
           if (productDetail) {
            res.render("detail",{
@@ -33,7 +32,7 @@ const productController ={
             res.status(404).json({ error: 'Usuario no encontrado' });
           }
         } catch (error) {
-          console.error('Error al obtener el usuario:', error);
+          console.error('Error al obtener el producto:', error);
           res.status(500).json({ error: 'Error interno del servidor' });
         }
      },
@@ -62,12 +61,12 @@ const productController ={
           }
       
           const productPage = 1;
-          res.send(await product.getProdPage(page, productPage))
+          res.send(await productManager.getProdPage(page, productPage))
       },
       
       getProductByQuery: async (req, res) => {
           const qry = req.query.q
-          res.send(await product.getProdQuery(qry))
+          res.send(await productManager.getProdQuery(qry))
       },
       
       getProductsSorted: async(req,res) => {
@@ -77,7 +76,7 @@ const productController ={
                   sortOrder = -1;
               }
           }
-          res.send(await product.getProdSort(sortOrder))
+          res.send(await productManager.getProdSort(sortOrder))
       },
       
       getAllProducts: async(req, res) => {
@@ -91,7 +90,7 @@ const productController ={
           if(availability === undefined){
               availability = ""
           }
-          res.send(await product.getProdGeneral(null, null, category,availability,sortOrder))
+          res.send(await productManager.getProdGeneral(null, null, category,availability,sortOrder))
       },
       
       addProducts: async (req, res)=> {
@@ -108,12 +107,12 @@ const productController ={
           ) {
               return res.status(400).json({ error: 'Campos faltantes por proporcionar'});
           }
-          res.send(await product.addProducts(newProduct));
+          res.send(await productManager.addProducts(newProduct));
       },
       
       deleteProduct: async(req, res) => {
           let id = req.params.id
-          res.send(await product.deleteProducts(id))
+          res.send(await productManager.deleteProducts(id))
       },
       
       //ruta para agregar arrays
@@ -152,7 +151,7 @@ const productController ={
             availability: availability // Usa el valor booleano
           };
       
-          const addedProduct = await product.addProducts(productToAdd);
+          const addedProduct = await productManager.addProducts(productToAdd);
           addedProducts.push(addedProduct);
         }
       

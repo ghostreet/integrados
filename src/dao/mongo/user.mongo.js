@@ -29,6 +29,20 @@ export default class Users {
           return 'Error al obtener el usuario';
         }
       }
+      getUserByEmail = async (email) => {
+        try {
+          const user = await usersModel.findOne({ email: email }).lean();
+          
+          if (user) {
+            return user;
+          } else {
+            return null; 
+          }
+        } catch (error) {
+          console.error('Error al obtener el usuario:', error);
+          return 'Error al obtener el usuario';
+        }
+     };
     findEmail = async (param) => {
         try
         {
