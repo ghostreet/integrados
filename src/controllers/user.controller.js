@@ -1,6 +1,6 @@
-import UserManager from '../dao/classes/UserManager.js';
+import UserModel from '../dao/mongo/user.mongo.js';
 
-const userManager = new UserManager();
+const userManager = new UserModel();
 
 const userController = {
   getRegisterPage: (req, res) => {

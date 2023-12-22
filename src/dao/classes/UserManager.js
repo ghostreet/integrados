@@ -1,6 +1,6 @@
-import { promises as fs} from 'fs'
+/*import { promises as fs} from 'fs'
 import { nanoid } from 'nanoid'
-import { userModel } from '../models/user.model.js'
+import { userModel } from '../mongo/models/user.model.js'
 
 class UserManager extends userModel{
     constructor(){
@@ -82,4 +82,4 @@ class UserManager extends userModel{
 
 }
 
-export default UserManager
+export default UserManager*/

@@ -1,23 +1,40 @@
-import express from "express";
-import ProdRouter from "./routes/product.routes.js";
-import CartRouter from "./routes/cart.routes.js";
-import CartManager from "./dao/classes/CartManager.js";
-import ProductsManager from "./dao/classes/ProductManager.js";
-import mongoose from "mongoose";
+import express from 'express'
+import mongoose from 'mongoose'
+import config from './config/config.js'
+import passport from "passport"
+import cookieParser from "cookie-parser"
+
+import cartRouter from './routes/cart.routes.js'
+import prodRouter from './routes/product.routes.js'
+import userRouter from './routes/user.routes.js'
+import ticketRouter from './routes/ticket.routes.js'
+
+import UserMongo from "./dao/mongo/user.mongo.js"
+import ProdMongo from "./dao/mongo/products.mongo.js"
+
+import { Strategy as JwtStrategy } from 'passport-jwt';
+import { ExtractJwt as ExtractJwt } from 'passport-jwt';
+
+import __dirname, { authorization, passportCall, transport,createHash, isValidPassword } from "./utils.js"
+import initializePassport from "./config/passport.config.js"
+import * as path from "path"
+
+import {genAndSetToken, genAndSetTokenEmail, 
+  validateTokenResetPass, getEmailFromToken, getEmailFromTokenLogin} from "./jwt/token.js"
+  
+import UserDTO from './dao/DTOs/user.dto.js'
+import {Server} from "socket.io"
 import { engine } from "express-handlebars";
-import * as path from "path";
-import __dirname from "./utils.js";
-import userRouter from "./routes/user.routes.js";
+import compression from 'express-compression'
+import loggerMiddleware from "./loggerMiddleware.js";
+
+
 import MongoStore from "connect-mongo";
 import session from "express-session";
 import sessionFileStore from "session-file-store";
 
 
 const FileStore = sessionFileStore(session);
-const product = new ProductsManager();
-const cart = new CartManager();
-
-
 
 const app= express();
 const PORT = 8080;
@@ -25,15 +42,35 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}))
 
+app.use(cookieParser());
+app.use(compression());
+initializePassport();
+app.use(passport.initialize());
+app.use(loggerMiddleware);
 
-app.listen(PORT, () =>{
-    console.log(`Servidor Express en puerto ${PORT}`)
+
+const httpServer = app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`)
 })
 
+const socketServer = new Server(httpServer)
 
-app.use("/api/products", ProdRouter)
-app.use('/user', userRouter);
+//-------------------------------Prueba conexión-------------------------------------------//
+socketServer.on("connection", socket => {
+    console.log("Socket Conectado")
+//------Recibir información del cliente----------//
+    socket.on("message", data => {
+        console.log(data)
+    })
+  })
+const users = new UserMongo()
+const products = new ProdMongo()
 
+
+app.use("/carts", cartRouter)
+app.use("/products", prodRouter)
+app.use("/users", userRouter)
+app.use("/tickets", ticketRouter)
 
 
 //conexión mongo
@@ -56,8 +93,8 @@ app.use(session({
   saveUninitialized:false,
 }))
 
-app.use("/api/products", ProdRouter);
-app.use("/api/cart", CartRouter);
+app.use("/api/products", prodRouter);
+app.use("/api/cart", cartRouter);
 app.use("/api/sessions", userRouter);
 
 //handlebars
@@ -77,7 +114,7 @@ app.get("/products", async(req, res)=>{
   }
   let allProds = await product.getProducts();
   const products = allProds.map(product => product.toJSON());
-  res.render(product, {
+  res.render("product", {
     title: "vista de Productos",
     products: products,
     email: req.session.emailUser,

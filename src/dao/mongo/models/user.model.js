@@ -11,4 +11,5 @@ const userSchema = new mongoose.Schema({
     rol: String
 })
 
-export const userModel = mongoose.model(usersCollection,userSchema)
+const userModel = mongoose.model(usersCollection,userSchema)
+export default userModel

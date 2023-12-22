@@ -1,6 +1,6 @@
-import { promises as fs } from "fs";
+/*import { promises as fs } from "fs";
 import { nanoid } from "nanoid";
-import { productsModel} from '../models/product.model.js'
+import productsModel from '../mongo/models/product.model.js'
 
 
 class ProductsManager extends productsModel {
@@ -25,6 +25,27 @@ async getProducts() {
         return products;
     }catch(error) {
         throw error;
+    }
+}
+async exist(productId) {
+    console.log('Verificando existencia del producto con ID:', productId);
+    try {
+        // Utiliza findById para verificar si el producto existe
+        const product = await productsModel.findById(productId);
+
+        // Si el producto existe, devuélvelo
+        if (product) {
+            return product;
+        } else {
+            // Si el producto no existe, devuelve null o un mensaje de error
+            return null;
+            // O podrías lanzar un error indicando que el producto no existe
+            // throw new Error('Producto no encontrado');
+        }
+    } catch (error) {
+        console.error('Error al verificar si el producto existe:', error);
+        // Manejar el error según tus necesidades
+        return null;
     }
 }
 
@@ -150,4 +171,4 @@ async getProdId(id) {
 
 }
 
-export default ProductsManager
+export default ProductsManager*/

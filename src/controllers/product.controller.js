@@ -1,8 +1,8 @@
 
-import ProductsManager from '../dao/classes/ProductManager.js';
+import Products from '../dao/mongo/products.mongo.js';
 
 
-const productManager = new ProductsManager();
+const productManager = new Products();
 
 const productController ={
     
@@ -24,7 +24,10 @@ const productController ={
           const productDetail = await productManager.getProdId(pid);
       
           if (productDetail) {
-            res.json(productDetail);
+           res.render("detail",{
+            title: "Detalles del producto",
+            product: productDetail,
+           })
           } else {
             res.status(404).json({ error: 'Producto no encontrado' });
           }
@@ -34,14 +37,24 @@ const productController ={
         }
       },
       
-      geProductsLimit: async (req, res) => {
-          let limit = parseInt(req.params.limit)
-          if (isNaN(limit) || limit <=0) {
-              limit = 10;
+      getProductsLimit: async (req, res) => {
+        try {
+          let limit = parseInt(req.params.limit);
+          if (isNaN(limit) || limit <= 0) {
+            limit = 10;
           }
+      
+          // Lógica para obtener productos limitados, ajusta esto según se necesite
+          const limitedProducts = await productManager.getProductsLimit(limit);
+      
+          res.json(limitedProducts);
+        } catch (error) {
+          console.error('Error al obtener productos limitados:', error);
+          res.status(500).json({ error: 'Error interno del servidor' });
+        }
       },
       
-      getProductPAge: async (req, res)=> {
+      getProductsPage: async (req, res)=> {
           let page = parseInt(req.params.page);
           if (isNaN(page) || page <= 0) {
               page = 1;
@@ -66,7 +79,7 @@ const productController ={
           res.send(await product.getProdSort(sortOrder))
       },
       
-      getAllProdcuts: async(req, res) => {
+      getAllProducts: async(req, res) => {
           let sortOrder = req.query.sortOrder;
           let category = req.query.category
           let availability = req.query.availability

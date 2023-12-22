@@ -11,5 +11,5 @@ const productsSchema = new mongoose.Schema({
     category: { type: String, required: true},
     availability: { type: Boolean, required: true}
 })
-
-export const productsModel = mongoose.model(productsCollection,productsSchema)
+const productsModel = mongoose.model(productsCollection,productsSchema)
+export default productsModel;

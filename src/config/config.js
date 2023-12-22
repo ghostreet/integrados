@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 
-dotenv.comfig()
+dotenv.config()
 export default {
-    persistence: process.env.PERSISTENCE
+    persistence: process.env.PERSISTENCE,
+    mongo_url: process.env.mongo_url
 }
