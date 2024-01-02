@@ -2,7 +2,7 @@ import { Router } from "express";
 //import { Carts } from '../dao/factory.js'
 import CartDTO from "../dao/DTOs/cart.dto.js";
 import TicketDTO from "../dao/DTOs/ticket.dto.js";
-import { ticketService, cartService, userService } from "../repository/index.js";
+import { ticketService, cartService } from "../repository/index.js";
 import Carts from "../dao/mongo/carts.mongo.js";
 
 const cartRouter = Router();
@@ -10,17 +10,42 @@ const cartMongo = new Carts()
 
 // Asigna las rutas al controlador correspondiente
 cartRouter.get("/", async (req, res) => {
-    let result = await cartMongo.get()
-    res.send({ status: "success", payload: result})
+    try
+    {
+        let result = await cartMongo.get()
+        res.status(200).send({ status: "success", payload: result });
+    }
+    catch(error)
+    {
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
+    } 
 })
+
+cartRouter.post("/", async (req, res) => {
+    try
+    {
+        let { products } = req.body
+        let cart = new CartDTO({ products })
+        let result = await cartService.createCart(cart)
+        res.status(200).send({ status: "success", payload: result });
+    }
+    catch(error)
+    {
+        res.status(500).send({ status: "error", message: "Error interno del servidor" });
+    }
+})
+
+
 
 cartRouter.post("/:cid/purchase", async (req, res) => {
     try {
         let id_cart = req.params.cid;
+
         const productos = req.body.productos;
         const correo = req.body.correo;
         let cart = cartService.validateCart(id_cart)
         if (!cart) {
+            
             req.logger.error("No se encontró el carrito con el ID proporcionado");
             return { error: "No se encontró el carrito con el ID proporcionado" };
         }

@@ -12,10 +12,10 @@ export default class Carts {
     }
     getCartId = async (id_cart) => {
         try {
-            // Obtener el carrito por su ID
+            // Obtener el carrito por ID
             const cart = await cartsModel.findById(id_cart);
     
-            // Verificar si el carrito existe
+            // Verificar si existe el carrito
             if (!cart) {
                 return { error: "No se encontró el carrito con el ID proporcionado" };
             }
@@ -74,21 +74,21 @@ export default class Carts {
         try {
             let totalAmount = 0;
     
-            // Verifica que 'productos' sea definido y que sea un array
+            // Validar si la propiedad "productos" es un array
             if (!productos || !Array.isArray(productos)) {
                 console.error('La propiedad "productos" no es un array válido.');
                 return totalAmount;
             }
     
             for (const producto of productos) {
-                // Supongamos que cada producto tiene un precio y stock definidos
+               //calcula el monto total de los productos
                 totalAmount += producto.price * producto.stock;
             }
     
             return totalAmount;
         } catch (error) {
             console.error("Error al calcular el monto:", error);
-            return 0; // O manejar el error de otra manera según tus necesidades
+            return 0; // Devuelve 0 si hubo un error
         }
     };
     

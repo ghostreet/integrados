@@ -5,6 +5,7 @@ import jwt from "passport-jwt"
 const LocalStrategy = local.Strategy
 const JwtStrategy = jwt.Strategy
 const ExtractJwt = jwt.ExtractJwt
+
 const cookieExtractor = req =>{
     let token = null
     if(req && req.cookies){

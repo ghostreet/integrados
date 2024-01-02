@@ -3,7 +3,6 @@ import Router from "express";
 import UserDTO from "../dao/DTOs/user.dto.js";
 import { userService } from "../repository/index.js";
 import Users from "../dao/mongo/user.mongo.js"
-import userController from "../controllers/user.controller.js";
 const userRouter = Router()
 
 const usersMongo = new Users()
@@ -44,10 +43,5 @@ userRouter.post("/rol/:uid", async (req, res) => {
       res.status(500).json({ error: 'Error interno del servidor' });
     }
   });
-
-userRouter.get("/register", userController.getRegisterPage);
-userRouter.post("/register", userController.registerUser);
-userRouter.post("/login", userController.loginUser);
-userRouter.get("/logout", userController.logoutUser)
 
 export default userRouter;
