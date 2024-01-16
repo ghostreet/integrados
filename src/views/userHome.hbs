@@ -44,7 +44,8 @@
     document.getElementById('logoutButton').addEventListener('click', cerrarSesion);
     function cerrarSesion() {
         localStorage.removeItem("token");
-        window.location.href = '/';
+        var userEmail = "{{user.email}}";
+        window.location.href = '/logout?email=' + userEmail;w
     }
 </script>
 <script src="/socket.io/socket.io.js"></script>

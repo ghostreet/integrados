@@ -208,6 +208,20 @@ authorization('user')(req, res,async() => {
     res.render('userHome', { products: prodAll });
 });
 })
+
+function isAuthenticated(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    res.status(401).json({ message: "No estás autenticado" });
+  }
+}
+
+app.get('/products', passportCall('jwt'), isAuthenticated, async (req, res) => {
+  const prodAll = await products.get();
+  res.render('products', { products: prodAll });
+});
+
 app.get('/admin',passportCall('jwt'), authorization('user'),(req,res) =>{
 authorization('user')(req, res,async() => {    
     const prodAll = await products.get();
