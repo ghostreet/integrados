@@ -1,5 +1,6 @@
 import cartsModel from './models/cart.model.js'
 import productsModel from './models/product.model.js'
+import mongoose from 'mongoose'
 
 export default class Carts {
     constructor() {
@@ -97,4 +98,52 @@ export default class Carts {
         return result
         console.log("Carro creado correctamente")
     }
+    addToCart = async (cartId, productId, quantity) => {
+        try {
+            if (typeof cartId !== 'string') {
+                throw new Error('El cartId no es una cadena válida.');
+            }
+            // Convertir el cartId de cadena a ObjectId
+            const cartObjectId = new mongoose.Types.ObjectId(cartId)
+            // Buscar el carrito existente o crear uno nuevo si no existe
+            let cart = await cartsModel.findById(cartObjectId)           
+            // Verificar si ya existe el producto en el carrito
+            const existingProduct = cart.products.find(product => product.productId.equals(productId));
+    
+            if (existingProduct) {
+                // Si el producto ya está en el carrito, actualizar la cantidad
+                existingProduct.quantity += quantity;
+            } else {
+                // Si el producto no está en el carrito, agregarlo
+                cart.products.push({
+                    productId: productId,
+                    quantity: quantity,
+                });
+            }
+    
+            // Guardar los cambios en el carrito
+            await cart.save();
+    
+            console.log("Producto agregado al carrito correctamente");
+            return cart;
+        } catch (error) {
+            console.error('Error al agregar producto al carrito:', error);
+            throw new Error('Error al agregar producto al carrito');
+        }
+    };
+    getCartWithProducts = async (cartId) =>
+    {
+      try
+      {
+        const cart = await cartsModel.findById(cartId).populate('products.productId').lean();
+        if (!cart) {
+          return 'Carrito no encontrado';
+        }
+    
+        return cart;
+      } catch (error) {
+        console.error('Error al obtener el carrito con productos:', error);
+        return 'Error al obtener el carrito con productos';
+      }
+    }     
 }

@@ -9,7 +9,8 @@ const productsSchema = new mongoose.Schema({
     price: { type: Number, required: true},
     stock: { type: Number, required: true},
     category: { type: String, required: true},
-    availability: { type: Boolean, required: true}
+    availability: { type: Boolean, required: true},
+    owner: {type: String}
 })
 const productsModel = mongoose.model(productsCollection,productsSchema)
 export default productsModel;

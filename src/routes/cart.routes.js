@@ -1,5 +1,4 @@
 import { Router } from "express";
-//import { Carts } from '../dao/factory.js'
 import CartDTO from "../dao/DTOs/cart.dto.js";
 import TicketDTO from "../dao/DTOs/ticket.dto.js";
 import { ticketService, cartService } from "../repository/index.js";
@@ -8,15 +7,17 @@ import Carts from "../dao/mongo/carts.mongo.js";
 const cartRouter = Router();
 const cartMongo = new Carts()
 
-// Asigna las rutas al controlador correspondiente
+
 cartRouter.get("/", async (req, res) => {
     try
     {
+        req.logger.info('Se obtiene lista de carritos');
         let result = await cartMongo.get()
         res.status(200).send({ status: "success", payload: result });
     }
     catch(error)
     {
+        req.logger.info('Error al obtener lista de carritos');
         res.status(500).send({ status: "error", message: "Error interno del servidor" });
     } 
 })
@@ -25,9 +26,24 @@ cartRouter.post("/", async (req, res) => {
     try
     {
         let { products } = req.body
-        let cart = new CartDTO({ products })
-        let result = await cartService.createCart(cart)
-        res.status(200).send({ status: "success", payload: result });
+        const correo = req.body.email;
+        let rolUser = userService.getRolUser(products.owner)
+        if(rolUser == 'premium' && correo == products.owner)
+        {
+            req.logger.error('Un usuario premium NO puede agregar a su carrito un producto que le pertenece');
+            res.status(500).send({ status: "error", message: "Un usuario premium NO puede agregar a su carrito un producto que le pertenece" });
+        }else{
+            let cart = new CartDTO({ products })
+            let result = await cartService.createCart(cart)
+            if(result){
+                req.logger.info('Se crea carrito correctamente correctamente');
+                res.status(200).send({ status: "success", payload: result });
+            }else{
+                req.logger.error("Error al crear carritos");
+                res.status(500).send({ status: "error", message: "Error interno del servidor" });
+            }
+            
+        }
     }
     catch(error)
     {
@@ -64,13 +80,5 @@ cartRouter.post("/:cid/purchase", async (req, res) => {
         return res.status(500).json({ error: "Error interno al procesar la compra" });
     }
 })
-
-/*cartRouter.post("/addcart", cartController.addCart);
-cartRouter.post("/addproducttocart/:cid", cartController.addProductToCart)
-cartRouter.get("/allcarts", cartController.getAllCarts);
-cartRouter.get("/:cid/products/:pid", cartController.addProductToCart);
-cartRouter.put("/:cid", cartController.updateProductCart);
-cartRouter.delete("/:cid", cartController.removeAllProductsFromCart);
-cartRouter.get("/population/:cid", cartController.getCartAndProducts);*/
 
 export default cartRouter;

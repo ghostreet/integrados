@@ -7,6 +7,9 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
     const id = idInput.value;
     idInput.value = '';
 
+    const emailInput = document.getElementById('correoLogin');
+    const email = emailInput.value;
+
     const descInput = document.getElementById('desc');
     const description = descInput.value;
     descInput.value = '';
@@ -30,12 +33,17 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
     const availableInput = document.getElementById('available');
     const available = availableInput.value;
 
+    const ownerInput = document.getElementById('owner');
+    const owner = ownerInput.value;
+    ownerInput.value = '';
+
+
     const eliminarProductoCheckbox = document.getElementById('eliminarProducto');
     const eliminarProducto = eliminarProductoCheckbox.checked;
 
     if (eliminarProducto) {
         // Enviar mensaje si el checkbox está seleccionado
-        socket.emit("delProd", { id: id });
+        socket.emit("delProdPremium", { id: id, owner: owner, email: email });
     }else{
         const newProduct = {
             description: description,
@@ -43,7 +51,8 @@ document.getElementById('prod-form').addEventListener('submit', (e) => {
             price: price,
             stock: stock,
             category: category,
-            availability: available
+            availability: available,
+            owner: owner,
         }
     
         if (id === '') {
@@ -69,7 +78,7 @@ socket.on("success", (data) => {
     });
 });
 
-socket.on("errorUserPremium", (data) => {
+socket.on("errorDelPremium", (data) => {
     Swal.fire({
         icon: 'error',
         title: data,

@@ -1,30 +1,42 @@
 import Router from "express";
-//import { Users } from '../dao/factory.js'
 import UserDTO from "../dao/DTOs/user.dto.js";
 import { userService } from "../repository/index.js";
 import Users from "../dao/mongo/user.mongo.js"
-import { uploader} from "../utils.js";
+import { transport, uploader} from "../utils.js";
 
 const userRouter = Router()
 
 const usersMongo = new Users()
+
 //obtener usuarios
 userRouter.get("/", async (req, res) => {
+  try {
     req.logger.info('Se cargan usuarios');
     let result = await usersMongo.get()
-    res.send({ status: "success", payload: result })
+    res.status(200).send({ status: "success", payload: result });
+  }
+  catch (error) {
+    req.logger.error('Error al cargar usuarios');
+    res.status(500).send({ status: "error", message: "Error interno del servidor" });
+  }
 })
 //crear usuario
-userRouter.post("/", async (req, res) => {
-    let { first_name, last_name, email, age, password, rol } = req.body
 
+userRouter.post("/", async (req, res) => {
+  try {
+    let { first_name, last_name, email, age, password, rol } = req.body
     let user = new UserDTO({ first_name, last_name, email, age, password, rol })
     let result = await userService.createUser(user)
-    if(result){
-        req.logger.info('Se crea Usuario correctamente');
-    }else{
-        req.logger.error("Error al crear Usuario");
-    } 
+    if (result) {
+      req.logger.info('Se crea Usuario correctamente');
+    } else {
+      req.logger.error("Error al crear Usuario");
+    }
+    res.status(200).send({ status: "success", payload: result });
+  }
+  catch (error) {
+    res.status(500).send({ status: "error", message: "Error interno del servidor" });
+  }
 })
 //actualizatr usuario
 userRouter.post("/premium/:uid", async (req, res) => {
@@ -32,19 +44,19 @@ userRouter.post("/premium/:uid", async (req, res) => {
       const { rol } = req.body;
       const allowedRoles = ['premium', 'admin', 'usuario'];
       const uid = req.params.uid;
-
+  
       if (!allowedRoles.includes(rol)) {
         req.logger.error('Rol no válido proporcionado');
         return res.status(400).json({ error: 'Rol no válido' });
       }
-
+  
       // Verifica  si el usuario tiene los documentos requeridos
-    if (!(await hasRequiredDocuments(uid))) {
-      req.logger.error('El usuario no tiene los documentos requeridos para el rol premium');
-      return res.status(400).json({ error: 'El usuario no tiene los documentos requeridos para el rol premium' });
-    }
-
-      let changeRol = await userService.updUserRol({uid, rol});
+      if (!(await hasRequiredDocuments(uid))) {
+        req.logger.error('El usuario no tiene los documentos requeridos para el rol premium');
+        return res.status(400).json({ error: 'El usuario no tiene los documentos requeridos para el rol premium' });
+      }
+  
+      let changeRol = await userService.updUserRol({ uid, rol });
   
       if (changeRol) {
         req.logger.info('Se actualiza rol correctamente');
@@ -54,8 +66,35 @@ userRouter.post("/premium/:uid", async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar el rol' });
       }
     } catch (error) {
-      console.error('Error en la ruta /rol/:uid:', error);
+      req.logger.error('Error en la ruta /premium/:uid');
       res.status(500).json({ error: 'Error interno del servidor' });
+    }
+  });
+
+  userRouter.delete('/', async (req, res) => {
+    try {
+      // Fecha Actual
+      const currentDate = new Date();
+      const cutoffDate = new Date(currentDate.getTime() - 2 * 24 * 60 * 60 * 1000); // Calculo de 2 dias para validar last_connection
+      // Eliminar usuarios inactivos
+      const result = await usersMongo.deleteUsersByFilter({ last_connection: { $lt: cutoffDate } });
+      if(result.length > 0){
+        // Enviar correos electrónicos a los usuarios eliminados
+        for (const userEmail of result) {
+        await transport.sendMail({
+          from: 'srpruebascoderh@gmail.com', 
+          to: userEmail,
+          subject: 'Eliminación de cuenta por inactividad',
+          text: 'Tu cuenta ha sido eliminada debido a la inactividad.'
+        });
+      }
+      res.status(200).json({ message: 'Usuarios eliminados con éxito.' });
+      }else{
+        res.status(500).json({ message: 'No se eliminaron usuarios por inactividad' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al eliminar usuarios.' });
     }
   });
 

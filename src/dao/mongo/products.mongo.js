@@ -43,22 +43,16 @@ export default class Products {
     
             // Eliminación de producto por Id
             let deletedProduct = await productsModel.deleteOne({ _id: new mongoose.Types.ObjectId(productId) });
-                return deletedProduct
-
-            // Verificar si se eliminó el producto             
-          /*  if (deletedProduct.deletedCount > 0) {
-                // Resultado de la eliminación
-                return 'Producto eliminado exitosamente';
-            } else {
-                return 'No se encontró un producto con el ID especificado';
-            }*/
+            return deletedProduct
         } catch (error) {
             console.error('Error al eliminar producto:', error);
             return 'Error al eliminar producto';
         }
     };
+
     getProductById = async (productId) => {
         try {
+               
             //Validación de Id
             if (!mongoose.Types.ObjectId.isValid(productId)) {
                 throw new Error('ID de producto no válido');
@@ -76,6 +70,27 @@ export default class Products {
         } catch (error) {
             console.error('Error al obtener producto:', error);
             throw error;
+        }
+    };
+    
+    getProductOwnerById = async (productId) => {
+        try {
+            const product = await productsModel.findById(productId).lean();
+            if (!product) {
+                return 'Producto no encontrado';
+            }
+    
+            // Obtén el ID del owner del producto
+            const ownerId = product.owner;
+            // Verifica si se encontró el owner y formatea el resultado
+            if (ownerId) {
+                return {owner : ownerId}
+            } else {
+                return 'Owner no encontrado';
+            }
+        } catch (error) {
+            console.error('Error al obtener el owner del producto:', error);
+            return 'Error al obtener el owner del producto';
         }
     };
 }

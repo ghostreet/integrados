@@ -8,13 +8,13 @@ export default class Users {
   get = async () => {
       try
       {
-          let users = await userModel.find()
-          return users
-      }catch (error) {
-          console.error('Error al obtener usuarios:', error);
-          return 'Error obtener usuarios';
-      }       
-  }
+        let users = await userModel.find().select('_id first_name email rol');
+        return users;
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        return 'Error obtener usuarios';
+    }
+}
 
   getUserById = async (id) => { 
     try 
@@ -82,6 +82,23 @@ getUserRoleByEmail = async (email) => {
     }
   };
 
+  getIdCartByEmailUser = async (email) => {
+    try {
+      // Buscar el usuario por correo electrónico en tu modelo de usuario
+      const user = await userModel.findOne({ email });
+  
+      // Verificar si se encontró un usuario y si tiene un rol premium
+      if (user && user.id_cart) {
+        return user.id_cart;
+      } else {
+          return null; // O cualquier valor que indique que no se encontró un carrito
+      }
+    } catch (error) {
+      console.error('Error al obtener el rol del usuario:', error);
+      return 'Error al obtener el rol del usuario';
+    }
+  };
+
   updatePassword = async (email, newPassword) => {
     try {
         const updatedUser = await userModel.findOneAndUpdate(
@@ -121,6 +138,26 @@ updateLastConnection = async (email) => {
     }
   };
 
+  updateIdCartUser = async ({email, newIdCart}) => {
+    try {
+      const updatedUser = await userModel.findOneAndUpdate(
+        { email: email },
+        { $set: { id_cart: newIdCart } },
+        { new: true }
+      );
+  
+      if (updatedUser) {
+        return updatedUser;
+      } else {
+        console.error('Usuario no encontrado');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error al actualizar el id_Cart del usuario:', error);
+      throw error;
+    }
+  };
+
   getPasswordByEmail = async (email) => {
     try {
       const user = await userModel.findOne({ email: email }).lean();
@@ -154,6 +191,43 @@ updateLastConnection = async (email) => {
     } catch (error) {
       console.error('Error al actualizar el rol:', error);
       return 'Error al actualizar el rol';
+    }
+  };
+
+  deleteUser = async (userId) => {
+    try {
+        // Extraer el valor del ID si es un objeto
+        const idToDelete = typeof userId === 'object' ? userId.id : userId;
+
+        // Eliminar el usuario utilizando el ID
+        let deletedUser = await userModel.deleteOne({ _id: idToDelete });
+        return deletedUser;
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        return 'Error al eliminar usuario';
+    }
+  };
+  deleteUsersByFilter = async (filter) => {
+    try {
+      // Obtener usuarios que coinciden con el filtro
+      const usersToDelete = await userModel.find(filter);
+
+      // Obtener los correos electrónicos de los usuarios antes de eliminarlos
+      const deletedUserEmails = usersToDelete.map(user => user.email);
+
+      // Eliminar usuarios inactivos
+      const result = await userModel.deleteMany(filter);
+
+      if (result.deletedCount > 0) {
+        // Si se eliminó al menos un usuario, devolver los correos electrónicos
+        return deletedUserEmails;
+      } else {
+        // No se eliminaron usuarios
+        return [];
+      }
+    } catch (error) {
+      console.error('Error al eliminar usuarios:', error);
+      throw error;
     }
   };
 
